@@ -3,9 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"net/http"
-	"time"
 
+	"chrishayward.xyz/users/handlers"
+	"chrishayward.xyz/users/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -14,144 +14,33 @@ import (
 )
 
 var (
-	port   = flag.Uint("port", 8080, "-port=8080")
 	days   = flag.Int("days", 1, "-days=1")
+	port   = flag.Uint("port", 8080, "-port=8080")
 	cost   = flag.Int("cost", bcrypt.DefaultCost, "-cost=14")
-	debug  = flag.Bool("debug", false, "-debug=true")
+	file   = flag.String("file", "users.db", "-file=users.db")
 	secret = flag.String("secret", uuid.NewString(), "-secret=?")
 )
 
-type User struct {
-	gorm.Model
-	Name     string
-	Hash     string
-	Sessions []Session
-}
-
-type Session struct {
-	gorm.Model
-	Token   string
-	Expires int64
-	UserID  uint
-}
-
-type Request struct {
-	Name string `form:"name" json:"name" binding:"required"`
-	Pass string `form:"pass" json:"pass" binding:"required"`
-}
-
-type Internal struct {
-	Secret string `form:"secret" json:"secret" binding:"required"`
-	Token  string `form:"token" json:"token" binmding:"required"`
-}
-
 func main() {
+	// Parse the flags.
 	flag.Parse()
 
-	if *debug {
-		fmt.Println(*secret)
-	}
-
-	db, err := gorm.Open(sqlite.Open("users.db"), &gorm.Config{})
+	// Initialize the database.
+	db, err := gorm.Open(sqlite.Open(*file), &gorm.Config{})
 	if err != nil {
 		panic(err)
 	}
+	if err := db.AutoMigrate(&models.User{}, &models.Session{}); err != nil {
+		panic(err)
+	}
 
-	db.AutoMigrate(&User{}, &Session{})
-
+	// Setup request handlers.
 	r := gin.Default()
 
-	r.POST("/register", func(c *gin.Context) {
-		var r Request
-		if err := c.ShouldBindJSON(&r); err != nil {
-			c.AbortWithStatus(http.StatusBadRequest)
-			return
-		}
+	r.POST("/register", handlers.Register(db, *cost))
+	r.POST("/authenticate", handlers.Authenticate(db, *days))
+	r.GET("/authorize", handlers.Authorize(db, *secret))
 
-		var u User
-		tx := db.First(u, "name = ?", r.Name)
-		if tx.RowsAffected != 0 {
-			c.AbortWithStatus(http.StatusConflict)
-			return
-		}
-
-		bytes, err := bcrypt.GenerateFromPassword([]byte(r.Pass), *cost)
-		if err != nil {
-			c.AbortWithError(http.StatusBadRequest, err)
-			return
-		}
-
-		u.Name = r.Name
-		u.Hash = string(bytes)
-
-		tx = db.Create(&u)
-		if tx.RowsAffected == 0 {
-			c.AbortWithStatus(http.StatusInternalServerError)
-			return
-		}
-	})
-
-	r.POST("/authenticate", func(c *gin.Context) {
-		var r Request
-		if err := c.ShouldBindJSON(&r); err != nil {
-			c.AbortWithStatus(http.StatusBadRequest)
-			return
-		}
-
-		var u User
-		tx := db.First(&u, "name = ?", r.Name)
-		if tx.RowsAffected == 0 {
-			c.AbortWithStatus(http.StatusNotFound)
-			return
-		}
-
-		if err := bcrypt.CompareHashAndPassword([]byte(u.Hash), []byte(r.Pass)); err != nil {
-			c.AbortWithStatus(http.StatusUnauthorized)
-			return
-		}
-
-		s := &Session{
-			Token:   uuid.NewString(),
-			Expires: time.Now().AddDate(0, 0, *days).UnixNano(),
-			UserID:  u.ID,
-		}
-
-		tx = db.Create(&s)
-		if tx.RowsAffected == 0 {
-			c.AbortWithStatus(http.StatusInternalServerError)
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{
-			"token":   s.Token,
-			"expires": s.Expires,
-		})
-	})
-
-	r.GET("/authorize", func(c *gin.Context) {
-		var i Internal
-		if err := c.ShouldBindJSON(&i); err != nil {
-			c.AbortWithStatus(http.StatusBadRequest)
-			return
-		}
-
-		if i.Secret != *secret {
-			c.AbortWithStatus(http.StatusUnauthorized)
-			return
-		}
-
-		var s Session
-		tx := db.First(&s, "token = ? AND expires >= ?",
-			i.Token, time.Now().UnixNano())
-		if tx.RowsAffected == 0 {
-			c.AbortWithStatus(http.StatusNotFound)
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{
-			"userID": s.UserID,
-		})
-	})
-
+	// Run the application.
 	r.Run(fmt.Sprintf(":%d", *port))
 }
