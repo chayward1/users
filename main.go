@@ -17,7 +17,7 @@ var (
 	port   = flag.Uint("port", 8080, "-port=8080")
 	days   = flag.Int("days", 1, "-days=1")
 	cost   = flag.Int("cost", bcrypt.DefaultCost, "-cost=14")
-	debug  = flag.Bool("debug", true, "-debug=true")
+	debug  = flag.Bool("debug", false, "-debug=true")
 	secret = flag.String("secret", uuid.NewString(), "-secret=?")
 )
 
@@ -38,6 +38,11 @@ type Session struct {
 type Request struct {
 	Name string `form:"name" json:"name" binding:"required"`
 	Pass string `form:"pass" json:"pass" binding:"required"`
+}
+
+type Internal struct {
+	Secret string `form:"secret" json:"secret" binding:"required"`
+	Token  string `form:"token" json:"token" binmding:"required"`
 }
 
 func main() {
@@ -120,6 +125,31 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{
 			"token":   s.Token,
 			"expires": s.Expires,
+		})
+	})
+
+	r.GET("/authorize", func(c *gin.Context) {
+		var i Internal
+		if err := c.ShouldBindJSON(&i); err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
+
+		if i.Secret != *secret {
+			c.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+
+		var s Session
+		tx := db.First(&s, "token = ? AND expires >= ?",
+			i.Token, time.Now().UnixNano())
+		if tx.RowsAffected == 0 {
+			c.AbortWithStatus(http.StatusNotFound)
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"userID": s.UserID,
 		})
 	})
 
