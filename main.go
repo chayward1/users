@@ -35,7 +35,14 @@ type Session struct {
 	UserID  uint
 }
 
+type Request struct {
+	Name string `form:"name" json:"name" binding:"required"`
+	Pass string `form:"pass" json:"pass" binding:"required"`
+}
+
 func main() {
+	flag.Parse()
+
 	if *debug {
 		fmt.Println(*secret)
 	}
@@ -50,46 +57,50 @@ func main() {
 	r := gin.Default()
 
 	r.POST("/register", func(c *gin.Context) {
-		name, pass :=
-			c.PostForm("name"),
-			c.PostForm("pass")
+		var r Request
+		if err := c.ShouldBindJSON(&r); err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
 
-		var u *User
-		tx := db.First(&u, "name = ?", name)
+		var u User
+		tx := db.First(u, "name = ?", r.Name)
 		if tx.RowsAffected != 0 {
 			c.AbortWithStatus(http.StatusConflict)
 			return
 		}
 
-		bytes, err := bcrypt.GenerateFromPassword([]byte(pass), *cost)
+		bytes, err := bcrypt.GenerateFromPassword([]byte(r.Pass), *cost)
 		if err != nil {
 			c.AbortWithError(http.StatusBadRequest, err)
 			return
 		}
 
-		u.Name = name
+		u.Name = r.Name
 		u.Hash = string(bytes)
 
-		tx = db.Save(u)
+		tx = db.Create(&u)
 		if tx.RowsAffected == 0 {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
 	})
 
-	r.POST("/login", func(c *gin.Context) {
-		name, pass :=
-			c.PostForm("name"),
-			c.PostForm("pass")
+	r.POST("/authenticate", func(c *gin.Context) {
+		var r Request
+		if err := c.ShouldBindJSON(&r); err != nil {
+			c.AbortWithStatus(http.StatusBadRequest)
+			return
+		}
 
-		var u *User
-		tx := db.First(&u, "name = ?", name)
+		var u User
+		tx := db.First(&u, "name = ?", r.Name)
 		if tx.RowsAffected == 0 {
 			c.AbortWithStatus(http.StatusNotFound)
 			return
 		}
 
-		if err := bcrypt.CompareHashAndPassword([]byte(u.Hash), []byte(pass)); err != nil {
+		if err := bcrypt.CompareHashAndPassword([]byte(u.Hash), []byte(r.Pass)); err != nil {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
@@ -100,7 +111,7 @@ func main() {
 			UserID:  u.ID,
 		}
 
-		tx = db.Save(&s)
+		tx = db.Create(&s)
 		if tx.RowsAffected == 0 {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
@@ -109,28 +120,6 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{
 			"token":   s.Token,
 			"expires": s.Expires,
-		})
-	})
-
-	r.GET("/authorize", func(c *gin.Context) {
-		key, token :=
-			c.Query("secret"),
-			c.Query("token")
-
-		if key != *secret {
-			c.AbortWithStatus(http.StatusUnauthorized)
-			return
-		}
-
-		var s *Session
-		tx := db.First(&s, "token <> ? AND expires > ?", token, time.Now().UnixNano())
-		if tx.RowsAffected == 0 {
-			c.AbortWithStatus(http.StatusNotFound)
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{
-			"userID": s.UserID,
 		})
 	})
 
