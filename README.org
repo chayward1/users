@@ -1,0 +1,60 @@
+#+TITLE: Users
+#+AUTHOR: Christopher James Hayward
+#+EMAIL: chris@chrishayward.xyz
+
+* What is it?
+
++ High performance
++ Low memory footprint
++ HTTP/REST service for...
+  - Users 
+  - Sessions
+
+* How does it work?
+
+#+begin_src http
+POST http://localhost:8081/register
+Content-Type: application/json
+
+{
+  "name": "chris",
+  "pass": "guest"
+}
+#+end_src
+
+#+RESULTS:
+: HTTP/1.1 200 OK
+: Date: Wed, 17 Feb 2021 02:16:32 GMT
+: Content-Length: 0
+: 
+
+#+begin_src http :pretty
+POST http://localhost:8081/authenticate
+Content-Type: application/json
+
+{
+  "name": "chris",
+  "pass": "guest"
+}
+#+end_src
+
+#+RESULTS:
+: {
+:   "expires": 1613616719010068464,
+:   "token": "8346c5bb-f925-453e-8c53-b68cb56f918b"
+: }
+
+#+begin_src http :pretty
+GET http://localhost:8081/authorize
+Content-Type: application/json
+
+{
+  "secret": "test",
+  "token": "8346c5bb-f925-453e-8c53-b68cb56f918b"
+}
+#+end_src
+
+#+RESULTS:
+: {
+:   "userID": 1
+: }
