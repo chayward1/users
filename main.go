@@ -26,21 +26,13 @@ func main() {
 	flag.Parse()
 
 	// Initialize the database.
-	db, err := gorm.Open(sqlite.Open(*file), &gorm.Config{})
-	if err != nil {
-		panic(err)
-	}
-	if err := db.AutoMigrate(&models.User{}, &models.Session{}); err != nil {
-		panic(err)
-	}
+	db, _ := gorm.Open(sqlite.Open(*file), &gorm.Config{})
+	db.AutoMigrate(&models.User{}, *&models.Session{})
 
-	// Setup request handlers.
+	// Run the application.
 	r := gin.Default()
-
 	r.POST("/register", handlers.Register(db, *cost))
 	r.POST("/authenticate", handlers.Authenticate(db, *days))
 	r.GET("/authorize", handlers.Authorize(db, *secret))
-
-	// Run the application.
 	r.Run(fmt.Sprintf(":%d", *port))
 }

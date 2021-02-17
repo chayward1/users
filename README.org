@@ -40,8 +40,8 @@ Content-Type: application/json
 
 #+RESULTS:
 : {
-:   "expires": 1613616719010068464,
-:   "token": "8346c5bb-f925-453e-8c53-b68cb56f918b"
+:   "expires": 1613621508848924782,
+:   "token": "0a0621d8-93e4-4f06-aa06-3ab4a13e8736"
 : }
 
 #+begin_src http :pretty
@@ -50,7 +50,7 @@ Content-Type: application/json
 
 {
   "secret": "test",
-  "token": "8346c5bb-f925-453e-8c53-b68cb56f918b"
+  "token": "0a0621d8-93e4-4f06-aa06-3ab4a13e8736"
 }
 #+end_src
 
