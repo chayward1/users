@@ -2,6 +2,8 @@
 #+AUTHOR: Christopher James Hayward
 #+EMAIL: chris@chrishayward.xyz
 
+User accounts and persistent sessions for simple peons.
+
 * What is it?
 
 + High performance
