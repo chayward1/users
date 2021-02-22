@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"chrishayward.xyz/users/messages"
+	"github.com/chayward1/users/messages"
 	"github.com/gin-gonic/gin"
 )
 

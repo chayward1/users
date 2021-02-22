@@ -1,4 +1,4 @@
-module chrishayward.xyz/users
+module github.com/chayward1/users
 
 go 1.13
 
