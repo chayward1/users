@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"chrishayward.xyz/users/messages"
-	"chrishayward.xyz/users/models"
+	"github.com/chayward1/users/messages"
+	"github.com/chayward1/users/models"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
