@@ -14,6 +14,8 @@ User accounts and persistent sessions for simple peons.
 
 * How does it work?
 
+If you're not already, register with the service at the ~/register~ endpoint.
+
 #+begin_src http
 POST http://localhost:8081/register
 Content-Type: application/json
@@ -29,6 +31,8 @@ HTTP/1.1 200 OK
 Date: Wed, 17 Feb 2021 02:16:32 GMT
 Content-Length: 0
 #+end_example
+
+Authenticate using the ~/authenticate~ endpoint with the same name and password used during registration.
 
 #+begin_src http :pretty
 POST http://localhost:8081/authenticate
@@ -46,6 +50,8 @@ Content-Type: application/json
   "token": "0a0621d8-93e4-4f06-aa06-3ab4a13e8736"
 }
 #+end_src
+
+The ~/authorize~ endpoint allows external / internal services to verify your session with the service.
 
 #+begin_src http :pretty
 GET http://localhost:8081/authorize

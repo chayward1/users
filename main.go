@@ -4,8 +4,8 @@ import (
 	"flag"
 	"fmt"
 
-	"chrishayward.xyz/users/handlers"
-	"chrishayward.xyz/users/models"
+	"github.com/chayward1/users/handlers"
+	"github.com/chayward1/users/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
