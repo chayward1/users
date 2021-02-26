@@ -24,11 +24,11 @@ Content-Type: application/json
 }
 #+end_src
 
-#+RESULTS:
-: HTTP/1.1 200 OK
-: Date: Wed, 17 Feb 2021 02:16:32 GMT
-: Content-Length: 0
-: 
+#+begin_example
+HTTP/1.1 200 OK
+Date: Wed, 17 Feb 2021 02:16:32 GMT
+Content-Length: 0
+#+end_example
 
 #+begin_src http :pretty
 POST http://localhost:8081/authenticate
@@ -40,11 +40,12 @@ Content-Type: application/json
 }
 #+end_src
 
-#+RESULTS:
-: {
-:   "expires": 1613621508848924782,
-:   "token": "0a0621d8-93e4-4f06-aa06-3ab4a13e8736"
-: }
+#+begin_src json
+{
+  "expires": 1613621508848924782,
+  "token": "0a0621d8-93e4-4f06-aa06-3ab4a13e8736"
+}
+#+end_src
 
 #+begin_src http :pretty
 GET http://localhost:8081/authorize
@@ -56,7 +57,8 @@ Content-Type: application/json
 }
 #+end_src
 
-#+RESULTS:
-: {
-:   "userID": 1
-: }
+#+begin_src json
+{
+  "userID": 1
+}
+#+end_src
