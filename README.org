@@ -17,7 +17,6 @@ User accounts and persistent sessions for simple peons.
 #+begin_src plantuml :file example.png :exports results
 left to right direction
 actor User
-actor Service
 
 package Users {
   usecase Register
@@ -25,9 +24,15 @@ package Users {
   usecase Authorize
 }
 
+Package Service {
+  usecase Foo
+}
+
 User --> Register
 User --> Authenticate
-Service --> Authorize
+
+User --> Foo
+Foo --> Authorize
 #+end_src
 
 #+ATTR_ORG: :width 240
@@ -36,7 +41,7 @@ Service --> Authorize
 #+RESULTS:
 [[file:example.png]]
 
-** Register
+** Registration
 
 If not already, users can register with the service at the ~/register~ endpoint.
 
@@ -56,7 +61,7 @@ Date: Wed, 17 Feb 2021 02:16:32 GMT
 Content-Length: 0
 #+end_example
 
-** Authenticate
+** Authentication
 
 Once already registered, users can Authenticate using the ~/authenticate~ endpoint with the same name and password used during registration.
 
@@ -77,7 +82,7 @@ Content-Type: application/json
 }
 #+end_src
 
-** Authorize
+** Authorization
 
 External services use the ~/authorize~ endpoint to identify and authorize the user making the request.
 
