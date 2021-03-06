@@ -31,16 +31,16 @@ Package Service {
 database UserDB
 database SessionDB
 
-User --> Register : POST /register
-Register -- UserDB : INSERT
+User --> Register
+Register -- UserDB
 
-User --> Authenticate : POST /authenticate
-Authenticate -- UserDB : SELECT
-Authenticate -- SessionDB : INSERT
+User --> Authenticate
+Authenticate -- UserDB
+Authenticate -- SessionDB
 
-User --> Foo : ?
-Foo -- Authorize : GET /authorize
-Authorize -- SessionDB : SELECT
+User --> Foo
+Foo -- Authorize
+Authorize -- SessionDB
 #+end_src
 
 #+ATTR_ORG: :width 240
