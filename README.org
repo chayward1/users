@@ -28,11 +28,19 @@ Package Service {
   usecase Foo
 }
 
+database UserDB
+database SessionDB
+
 User --> Register
+Register -- UserDB
+
 User --> Authenticate
+Authenticate -- UserDB
+Authenticate -- SessionDB
 
 User --> Foo
-Foo --> Authorize
+Foo -- Authorize
+Authorize -- SessionDB
 #+end_src
 
 #+ATTR_ORG: :width 240
