@@ -14,7 +14,7 @@ User accounts and persistent sessions for simple peons.
 
 * How does it work?
 
-#+begin_src plantuml :file example.png :exports results
+#+begin_src plantuml :file docs/example.png :exports results
 left to right direction
 actor User
 
