@@ -47,7 +47,7 @@ Authorize -- SessionDB
 #+ATTR_HTML: :width 240
 #+ATTR_LATEX: :width 240
 #+RESULTS:
-[[file:example.png]]
+[[file:docs/example.png]]
 
 ** Registration
 
