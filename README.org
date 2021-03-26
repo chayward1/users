@@ -4,15 +4,78 @@
 
 User accounts and persistent sessions for simple peons.
 
-* What is it?
+* Overview
 
 + High performance
 + Low memory footprint
 + HTTP/REST service for...
   - Users 
   - Sessions
+  
+** How to use
 
-* How does it work?
+*** Registration
+
+If not already, users can register with the service at the ~/register~ endpoint.
+
+#+begin_src http
+POST http://localhost:8081/register
+Content-Type: application/json
+
+{
+  "name": "chris",
+  "pass": "guest"
+}
+#+end_src
+
+#+begin_example
+HTTP/1.1 200 OK
+Date: Wed, 17 Feb 2021 02:16:32 GMT
+Content-Length: 0
+#+end_example
+
+*** Authentication
+
+Once already registered, users can Authenticate using the ~/authenticate~ endpoint with the same name and password used during registration.
+
+#+begin_src http :pretty
+POST http://localhost:8081/authenticate
+Content-Type: application/json
+
+{
+  "name": "chris",
+  "pass": "guest"
+}
+#+end_src
+
+#+begin_src json
+{
+  "expires": 1613621508848924782,
+  "token": "0a0621d8-93e4-4f06-aa06-3ab4a13e8736"
+}
+#+end_src
+
+*** Authorization
+
+External services use the ~/authorize~ endpoint to identify and authorize the user making the request.
+
+#+begin_src http :pretty
+GET http://localhost:8081/authorize
+Content-Type: application/json
+
+{
+  "secret": "test",
+  "token": "0a0621d8-93e4-4f06-aa06-3ab4a13e8736"
+}
+#+end_src
+
+#+begin_src json
+{
+  "userID": 1
+}
+#+end_src
+
+** How does it work?
 
 #+begin_src plantuml :file docs/example.png :exports results
 left to right direction
@@ -48,63 +111,3 @@ Authorize -- SessionDB
 #+ATTR_LATEX: :width 240
 [[./docs/example.png]]
 
-** Registration
-
-If not already, users can register with the service at the ~/register~ endpoint.
-
-#+begin_src http
-POST http://localhost:8081/register
-Content-Type: application/json
-
-{
-  "name": "chris",
-  "pass": "guest"
-}
-#+end_src
-
-#+begin_example
-HTTP/1.1 200 OK
-Date: Wed, 17 Feb 2021 02:16:32 GMT
-Content-Length: 0
-#+end_example
-
-** Authentication
-
-Once already registered, users can Authenticate using the ~/authenticate~ endpoint with the same name and password used during registration.
-
-#+begin_src http :pretty
-POST http://localhost:8081/authenticate
-Content-Type: application/json
-
-{
-  "name": "chris",
-  "pass": "guest"
-}
-#+end_src
-
-#+begin_src json
-{
-  "expires": 1613621508848924782,
-  "token": "0a0621d8-93e4-4f06-aa06-3ab4a13e8736"
-}
-#+end_src
-
-** Authorization
-
-External services use the ~/authorize~ endpoint to identify and authorize the user making the request.
-
-#+begin_src http :pretty
-GET http://localhost:8081/authorize
-Content-Type: application/json
-
-{
-  "secret": "test",
-  "token": "0a0621d8-93e4-4f06-aa06-3ab4a13e8736"
-}
-#+end_src
-
-#+begin_src json
-{
-  "userID": 1
-}
-#+end_src
