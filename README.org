@@ -75,6 +75,25 @@ Content-Type: application/json
 }
 #+end_src
 
+*** Logout
+
+When finished with their session, users can use the ~/logout~ endpoint to end their session while it remains valid.
+
+#+begin_src http :pretty
+GET http://localhost:8081/logout
+Content-Type: application/json
+
+{
+  "token": "0a0621d8-93e4-4f06-aa06-3ab4a13e8736"
+}
+#+end_src
+
+#+begin_example
+HTTP/1.1 200 OK
+Date: Wed, 17 Feb 2021 02:19:45 GMT
+Content-Length: 0
+#+end_example
+
 ** How does it work?
 
 #+begin_src plantuml :file docs/example.png :exports results
@@ -85,6 +104,7 @@ package Users {
   usecase Register
   usecase Authenticate
   usecase Authorize
+  usecase Logout
 }
 
 Package Service {
@@ -104,6 +124,9 @@ Authenticate -- SessionDB
 User --> Foo
 Foo -- Authorize
 Authorize -- SessionDB
+
+User --> Logout
+Logout -- SessionDB
 #+end_src
 
 #+ATTR_ORG: :width 240
